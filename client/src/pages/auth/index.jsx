@@ -5,33 +5,60 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import {apiClient} from "@/lib/api-client";
-import { SIGNUP_ROUTE } from "@/utils/constants";
+import { apiClient } from "@/lib/api-client";
+import { LOGIN_ROUTE, SIGNUP_ROUTE } from "@/utils/constants";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const validateSignup = ()=>{
-    if(!email.length){
+  const validateSignup = () => {
+    if (!email.length) {
       toast.error("Email is required");
-      return false
+      return false;
     }
-    if(!password.length){
+    if (!password.length) {
       toast.error("Password is required");
     }
-    if(password !== confirmPassword){
+    if (password !== confirmPassword) {
       toast.error("password and confirmed password should be same");
       return false;
     }
-    return true
-  }
+    return true;
+  };
 
-  const handleLogin = () => {};
+  const validateLogin = () => {
+    if (!email.length) {
+      toast.error("Email is required");
+      return false;
+    }
+    if (!password.length) {
+      toast.error("Password is required");
+      return false
+    }
+    return true;
+  };
+
+  const handleLogin = async () => {
+    if(validateLogin()){
+      const response = await apiClient.post(
+        LOGIN_ROUTE,
+        { email, password },
+        { withCredentials: true }
+      );
+
+      console.log("login response --->", {response}); 
+    }
+  };
+
   const handleSignup = async () => {
-    if(validateSignup()){
-      const response = await apiClient.post(SIGNUP_ROUTE, {email, password} );
+    if (validateSignup()) {
+      const response = await apiClient.post(
+        SIGNUP_ROUTE,
+        { email, password },
+        { withCredentials: true }
+      );
       console.log("response ", response);
     }
   };
@@ -90,7 +117,6 @@ const Auth = () => {
                 <Button className="rounded-full p-6" onClick={handleLogin}>
                   Login
                 </Button>
-
               </TabsContent>
 
               <TabsContent value="signup" className="flex flex-col gap-5 ">
