@@ -75,19 +75,51 @@ export const login = async (request, response, next) => {
 
 export const getUserInfo = async (request, response, next) => {
   try {
-    console.log("inside get user data auth controller", request.userId)
+    console.log("inside get user data auth controller", request.userId);
     const userData = await User.findById(request.userId);
     if (!userData) {
       return response.status(404).send("user not found");
     }
     return response.status(200).json({
-        id: userData.id,
-        email: userData.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        image: userData.image,
-        profileSetup: userData.profileSetup,
-        color: userData.color,
+      id: userData.id,
+      email: userData.email,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      image: userData.image,
+      profileSetup: userData.profileSetup,
+      color: userData.color,
+    });
+  } catch (error) {
+    console.log({ error });
+    return response.status(500).send("Internal Server Error");
+  }
+};
+
+export const updateProfile = async (request, response, next) => {
+  try {
+    const { userId } = request;
+    const { firstName, lastName, color } = request.body;
+    if (!firstName || !lastName ) {
+      return response
+        .status(400)
+        .send("Firstname, Lastname and color is required");
+    }
+
+    const userData = await User.findByIdAndUpdate(userId, {
+      firstName,
+      lastName,
+      color,
+      profileSetup: true,
+    }, {new:true, runValidators:true});
+
+    return response.status(200).json({
+      id: userData.id,
+      email: userData.email,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      image: userData.image,
+      profileSetup: userData.profileSetup,
+      color: userData.color,
     });
   } catch (error) {
     console.log({ error });
