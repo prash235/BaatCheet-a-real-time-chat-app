@@ -1,5 +1,6 @@
 import React from "react";
 import Preview from "../../../../assets/Preview.png"
+import ProfileInfo from "./components/profile-info";
 
 const ContactsContainer = () => {
   return (
@@ -17,6 +18,7 @@ const ContactsContainer = () => {
           <Title text="Channels"/>
         </div>
       </div>
+      <ProfileInfo /> 
     </div>
   );
 };
