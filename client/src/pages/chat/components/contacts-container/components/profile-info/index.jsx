@@ -62,27 +62,27 @@ const ProfileInfo = () => {
         </div>
       </div>
       <div className="flex gap-5">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button type="button" className="focus:outline-none">
-                <FiEdit2
-                  className="text-purple-500 text-xl font-medium"
-                  onClick={() => {
-                    navigate("/profile");
-                  }}
-                />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent
-              className="bg-[#1c1b1e] border-none text-white"
-              side="top"
-              align="center"
-            >
-              Edit Profile
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button type="button" className="focus:outline-none">
+              <FiEdit2
+                className="text-purple-500 text-xl font-medium"
+                onClick={() => {
+                  navigate("/profile");
+                }}
+              />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent
+            className="bg-[#1c1b1e] border-none text-white"
+            side="top"
+            align="center"
+          >
+            Edit Profile
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
         <TooltipProvider>
           <Tooltip>
