@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import authRoutes from "./routes/AuthRoutes.js";
 import contactsRoutes from "./routes/ContactRoutes.js";
+import setupSocket from "./socket.js";
 
 
 
@@ -33,6 +34,8 @@ app.use("/api/contacts", contactsRoutes);
 const server = app.listen(port, () => {
     console.log(`server is running at http://localhost:${port}`);
 })
+
+setupSocket(server)
 
 mongoose.connect(process.env.DATABASE_URL).then(()=>{
     console.log("connected to the MongoDB ");

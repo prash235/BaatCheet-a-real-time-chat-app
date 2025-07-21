@@ -1,3 +1,5 @@
+import { useSocket } from "@/context/SocketContext";
+import { useAppStore } from "@/store";
 import EmojiPicker from "emoji-picker-react";
 import React, { useEffect, useRef, useState } from "react";
 import { GrAttachment } from "react-icons/gr";
@@ -6,6 +8,10 @@ import { RiEmojiStickerLine } from "react-icons/ri";
 
 const MessageBar = () => {
   const emojiRef = useRef();
+  const socket = useSocket();
+  const { selectedChatData, selectedChatType, addMessage, userInfo } =
+    useAppStore();
+
   const [message, setMessage] = useState("");
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
@@ -25,7 +31,32 @@ const MessageBar = () => {
     setMessage((msg) => msg + emoji.emoji);
   };
 
-  const handleSendMessage = async () => {};
+  const handleSendMessage = async () => {
+    if (!message.trim() || !selectedChatData || !socket) return;
+
+    try {
+      console.log("Sending message with socket ID:", socket.id);
+
+      const messageData = {
+        sender: userInfo.id,
+        content: message,
+        recipient: selectedChatData._id,
+        messageType: "text",
+        fileUrl: undefined,
+      };
+
+      socket.emit("sendMessage", messageData, (ack) => {
+        if (ack?.error) {
+          console.error("Server error:", ack.error);
+        } else {
+          console.log("Message sent successfully");
+          setMessage("");
+        }
+      });
+    } catch (err) {
+      console.error("Error sending message:", err);
+    }
+  };
 
   return (
     <div className="h-[10vh] bg-[#1c1d25] flex justify-center items-center px-8 mb-6 gap-6">
@@ -58,7 +89,10 @@ const MessageBar = () => {
         </div>
         <div className="absolute bottom-16 right-0"></div>
       </div>
-      <button className="bg-[#8417ff] rounded-md flex items-center justify-center p-5 hover:bg-[#741bda] focus:border-none focus:outline-none focus:text-white duration-300 transition-all">
+      <button
+        onClick={handleSendMessage}
+        className="bg-[#8417ff] rounded-md flex items-center justify-center p-5 hover:bg-[#741bda] focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
+      >
         <IoSend className="text-2xl " />
       </button>
     </div>
