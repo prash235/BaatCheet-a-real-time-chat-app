@@ -14,6 +14,7 @@ const MessageBar = () => {
 
   const [message, setMessage] = useState("");
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+  const isSending = useRef(false); // Add this line to declare isSending ref
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -34,6 +35,10 @@ const MessageBar = () => {
   const handleSendMessage = async () => {
     if (!message.trim() || !selectedChatData || !socket) return;
 
+    // Prevent multiple rapid clicks
+    if (isSending.current) return;
+    isSending.current = true;
+
     try {
       console.log("Sending message with socket ID:", socket.id);
 
@@ -45,15 +50,28 @@ const MessageBar = () => {
         fileUrl: undefined,
       };
 
+      // Optimistic UI update
+      addMessage({
+        ...messageData,
+        _id: Date.now(), // Temporary ID
+        createdAt: new Date(),
+        sender: { _id: userInfo.id },
+        status: 'sending'
+      });
+
       socket.emit("sendMessage", messageData, (ack) => {
+        isSending.current = false;
+        
         if (ack?.error) {
           console.error("Server error:", ack.error);
+          // Update message status to failed in your store
         } else {
           console.log("Message sent successfully");
           setMessage("");
         }
       });
     } catch (err) {
+      isSending.current = false;
       console.error("Error sending message:", err);
     }
   };
@@ -67,6 +85,7 @@ const MessageBar = () => {
           placeholder="Type Message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
         />
         <button className="text-neutral-500 focus:border-none focus:outline-none focus:text-white duration-300 transition-all">
           <GrAttachment className="text-2xl " />
@@ -87,13 +106,15 @@ const MessageBar = () => {
             />
           </div>
         </div>
-        <div className="absolute bottom-16 right-0"></div>
       </div>
       <button
         onClick={handleSendMessage}
-        className="bg-[#8417ff] rounded-md flex items-center justify-center p-5 hover:bg-[#741bda] focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
+        disabled={!message.trim() || isSending.current}
+        className={`bg-[#8417ff] rounded-md flex items-center justify-center p-5 ${
+          !message.trim() || isSending.current ? 'opacity-50' : 'hover:bg-[#741bda]'
+        } focus:border-none focus:outline-none duration-300 transition-all`}
       >
-        <IoSend className="text-2xl " />
+        <IoSend className="text-2xl" />
       </button>
     </div>
   );

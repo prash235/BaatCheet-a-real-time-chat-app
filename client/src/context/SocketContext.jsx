@@ -20,40 +20,23 @@ export const SocketProvider = ({ children }) => {
     const newSocket = io(HOST, {
       withCredentials: true,
       query: { userId: userInfo.id },
-      autoConnect: true, // Ensure auto-connect is enabled
     });
 
-    // Set up all event listeners before setting the socket
-    newSocket.on("connect", () => {
-      console.log("Connected to socket server with ID:", newSocket.id);
-    });
-
-    newSocket.on("connect_error", (err) => {
-      console.error("Connection error:", err);
-    });
-
-    newSocket.on("disconnect", (reason) => {
-      console.log("Disconnected:", reason);
-    });
-
-    const handleRecieveMessage = (message) => {
-      console.log("Message received:", message);
-      if (
-        selectedChatType &&
-        selectedChatData &&
-        (selectedChatData._id === message.sender._id ||
-          selectedChatData._id === message.recipient._id)
-      ) {
+    const handleReceiveMessage = (message) => {
+      // Only add message if it's not from the current user
+      if (message.sender._id !== userInfo.id) {
+        console.log("Message received from other user:", message);
         addMessage(message);
       }
+      // For sent messages, we update the optimistic message via the ack callback
     };
 
-    newSocket.on("receiveMessage", handleRecieveMessage); // Fixed typo in event name
+    newSocket.on("receiveMessage", handleReceiveMessage);
 
     setSocket(newSocket);
 
     return () => {
-      newSocket.off("receiveMessage", handleRecieveMessage);
+      newSocket.off("receiveMessage", handleReceiveMessage);
       newSocket.disconnect();
     };
   }, [userInfo]);

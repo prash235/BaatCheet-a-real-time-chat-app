@@ -17,37 +17,19 @@ const setupSocket = (server) => {
       const senderSocketId = userSocketMap.get(message.sender);
       const recipientSocketId = userSocketMap.get(message.recipient);
 
-      console.log(
-        "Sending message from:",
-        message.sender,
-        "to:",
-        message.recipient
-      );
-      console.log(
-        "Sender socket:",
-        senderSocketId,
-        "Recipient socket:",
-        recipientSocketId
-      );
-
       const createdMessage = await Message.create(message);
       const messageData = await Message.findById(createdMessage._id)
         .populate("sender", "id email firstName lastName image color")
         .populate("recipient", "id email firstName lastName image color");
 
-      // Send acknowledgment back to sender
+      // Send acknowledgment to sender with the full message data
       if (callback) {
-        callback({ status: "success", message: messageData });
+        callback(messageData);
       }
 
-      // Send to recipient if online
-      if (recipientSocketId) {
+      // Only send to recipient if they're not the sender
+      if (recipientSocketId && message.sender !== message.recipient) {
         io.to(recipientSocketId).emit("receiveMessage", messageData);
-      }
-
-      // Also send back to sender (for their own UI)
-      if (senderSocketId) {
-        io.to(senderSocketId).emit("receiveMessage", messageData);
       }
     } catch (err) {
       console.error("Error sending message:", err);
